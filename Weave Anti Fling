@@ -1,0 +1,65 @@
+-- credits to https://www.youtube.com/@x13-m5w
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+local VELOCITY_SPIKE = 90
+local POSITION_SPIKE = 18
+local SAFE_OFFSET = 13
+
+local connection 
+
+local function setupCharacter(character)
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+
+    local root = character:WaitForChild("HumanoidRootPart")
+    local humanoid = character:WaitForChild("Humanoid")
+
+    local safePos = root.Position
+    local safeVel = Vector3.zero
+    local isFlinging = false
+
+    connection = RunService.Heartbeat:Connect(function()
+        local currentPos = root.Position
+        local currentVel = root.AssemblyLinearVelocity
+
+        if not isFlinging and currentVel.Magnitude < 60 then
+            safePos = currentPos
+            safeVel = currentVel
+        end
+
+        local velSpike = (currentVel - safeVel).Magnitude
+        local posSpike = (currentPos - safePos).Magnitude
+
+        if velSpike > VELOCITY_SPIKE or posSpike > POSITION_SPIKE then
+            isFlinging = true
+
+            root.AssemblyLinearVelocity = Vector3.zero
+            root.AssemblyAngularVelocity = Vector3.zero
+
+            local offset = Vector3.new(
+                math.random(-SAFE_OFFSET, SAFE_OFFSET),
+                0,
+                math.random(-SAFE_OFFSET, SAFE_OFFSET)
+            )
+
+            root.CFrame = CFrame.new(safePos + offset)
+
+            task.delay(0.25, function()
+                isFlinging = false
+            end)
+        end
+    end)
+end
+
+if player.Character then
+    setupCharacter(player.Character)
+end
+
+player.CharacterAdded:Connect(function(char)
+    setupCharacter(char)
+end)
