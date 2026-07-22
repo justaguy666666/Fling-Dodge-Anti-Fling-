@@ -1,0 +1,1 @@
+This script basically Auto Dodges fling attempts on your character, it keeps collision fully enabled, so your character still interacts normally with the world while dodging flings. Its simple but effective. 
